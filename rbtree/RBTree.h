@@ -18,7 +18,7 @@ class RBTree{
 		void insert_fix(RBTNode<T>* node);
 		//删除后调整
 		void delete_fix();
-		//寻找后继节点用来替代
+		//寻找前驱节点用来替代
 		RBTNode<T>* find_replace_node(RBTNode<T>* node);
 		//通过父节点获取叔叔节点
 		RBTNode<T>* find_uncle_by_parent(RBTNode<T>* parent);
@@ -41,11 +41,17 @@ class RBTree{
 };
 template<typename T>
 RBTNode<T>* RBTree<T>::find_uncle_by_parent(RBTNode<T>* parent){
+//	if(parent->key==7){
+//	cout<<"zuo"<<parent->parent->left->key<<endl;
+//	cout<<"you"<<parent->parent->right->key<<endl;}
 	if(parent == parent->parent->left){
 		//父节点是祖父节点的左孩子
 		return parent->parent->right;
+	}else if(parent == parent->parent->right){
+		return parent->parent->left;
 	}else{
-		return parent->parent->right;
+		cout<<"找叔叔出错了"<<endl;
+		exit(0);
 	}
 };
 template<typename T>
@@ -122,61 +128,153 @@ int RBTree<T>::insert_node(T x){
         return 0;
 };
 template<typename T>
-int RBTree<T>::delete_node(RBTNode<T>* node){
-        return 0;
+//黑红树的删除对应到2,3,4树中，真实删除的节点在2,3,4树中一定是叶子节点，所以有三种情况：2节点，3节点，4节点
+//2节点：里面有一个节点，一定是黑色
+//3节点：里面有两个节点，下面红，上面黑，如果删除黑，删除后用红代替再变黑，如果删除红，直接删
+//4节点：里面有三个节点，下面两个红，上面黑，如果删除红，直接删，黑色他有两个孩子，不可能删除黑
+//情况1：3节点和4节点
+//情况2：2节点，黑色的，删除的话要找兄弟（这里的兄弟是2,3,4树中的兄弟哦，不是红黑书中的兄弟：）借一个，兄弟有的借，分两种情况，兄弟是3节点或者4节点
+//	2.1：兄弟是3节点：兄弟只有一个孩子（这里的兄弟是2,3,4树中的兄弟，不是红黑树中的兄第，先在红黑树中找到其兄弟），父亲下去替代删除节点，兄弟上来替代父节点（但是要保证顺序，有可能在父亲下去之前旋转来保证顺序,尊转过程中注意变色)
+//	2.2：兄弟节点是4节点，以当前节点的父节点旋转一次即可
+//情况3：2节点，黑色的，删除的话要找兄弟借一个，但是兄弟没有子节点，没得借
+//	3.1：如果兄弟为黑，父亲为红，将兄弟变红，父亲变黑即可
+//	3.2：如果兄弟为黑，父亲为黑，将兄弟变红，但是可以找到一个不平衡的节点，该节点的一个子树刚才删了一个黑色，让此节点的另一个子树自损一个黑色，这个节点的左右子树就平衡了，但是往上他的父节点又不平衡了重复上面操作，递归直到跟节点结束
+//
+int RBTree<T>::delete_node(RBTNode<T>* cur){
+	if(cur->left!=Nil&&cur->right!=Nil){
+                //左右字节点都存在，撒谎拿出后调整
+                RBTNode<T>* real_delete_node = find_replace_node();
+                cur->key = real_delete_node->key;
+                cur->color = real_delete_node->color;
+                cur = real_delete_node;
+	}
+	RBTNode<T>* son_node = (cur->left!=Nil) ? cur->left:cur->right;//真正删除的节点的孩子节点（也就是真正删除了的节点的替代节点）
+	if(son_node==Nil){
+		//无字节点，直接删除（对应删除2,3,4树的3节点的红色和4节点的红色，不用调整）
+		if(update_flag(cur)==-1){
+			root = Nil;
+		}
+		if(cur->color==BLACK)
+			delete_fix(cur);
+		//只用修改cur父节点往下的指针，son_node为Nil，其往上的指针不能改
+		if(FLAG==0){
+        	        cur->parent->left = son_node;
+	        }else{
+	                cur->parent->right = son_node;
+	        }
+	        cur->parent = Nil;
+	}else{
+		//左右字节点只有一个存在(son_node)，用唯一的字节点替换就可以了
+		if(update_flag(cur)==-1){
+			root = son_node;
+		}
+		son_node->parent = cur->parent;//son_node不为Nil，所以要修改其复指针
+		if(FLAG==0){
+        	        cur->parent->left = son_node;
+	        }else{
+        	        cur->parent->right = son_node;
+	        }
+		cur->parent = Nil;
+		if(cur->color==BLACK){
+			//破坏了平衡去调整
+			delete_fix(son_node);
+		}
+	}
+        free(cur);
+	return 0;
 };
 template<typename T>
 void RBTree<T>::left_rotate(RBTNode<T>* cur){
 	RBTNode<T>* p =  cur->parent;
-	cur->parent = cur->parent->parent;
-	if(p->parent->left==p->parent)
-		p->parent->left = cur;
-	else
-		p->parent->right = cur;
-	cur->right = p;
-	p->parent = cur;
-	p->left = Nil;
+		//以b为支点旋转
+		//    a
+		//     \
+		//      b
+		//       \
+		//        c
+		cur->parent = cur->parent->parent;
+
+		if(p->parent==Nil){
+			//当前节点的父节点是跟节点
+			root = cur;
+		}else{
+//			cout<<"呵呵："<<p->key<<endl;
+			if(p->parent->left==p)
+				p->parent->left = cur;
+			else if(p->parent->right == p)
+				p->parent->right = cur;
+			else 
+				cout<<"树有问题"<<endl;
+		}
+		RBTNode<T>* temp = cur->left;
+		cur->left = p;
+        	p->parent = cur;
+       	        p->right = temp;
+		//以b为支点旋转
+		//      a
+		//       \
+		//        b
+		//       / \
+		//      c   d
+
 };
 template<typename T>
 void RBTree<T>::right_rotate(RBTNode<T>* cur){
 	RBTNode<T>* p = cur->parent;
-	cur->left = p;
+	if(p->parent == Nil){
+		root = cur;
+	}else{
+		if(p->parent->left == p){
+			p->parent->left = cur;
+		}else if(p->parent->right == p){
+			p->parent->right = cur;
+		}else{
+			cout<<"右旋出错"<<endl;
+		}
+	}
 	cur->parent = p->parent;
-	if(p->parent->left==p->parent)
-		p->parent->left = cur;
-	else
-		p->parent->right = cur;
+	RBTNode<T>* temp = cur->right;
+	cur->right = p;
 	p->parent = cur;
-	p->right = Nil;
+	p->left = temp;
 };
 template<typename T>
 void RBTree<T>::insert_fix(RBTNode<T>* cur){
+//	if(cur->parent->left == cur)
+//		FLAG = 0;
+//	else 
+//		FLAG = 1;
 	RBTNode<T>* p = cur->parent;
-	cout<<"p->key:"<<p->key<<endl;
-        if(p->color==RED){
+//	cout<<"p->key:"<<p->key<<endl;
+        while(p->color==RED&&p->parent!=Nil){
+		//更新FLAG
+		update_flag(cur);
                 RBTNode<T>* uncle = find_uncle_by_parent(p);
-                RBTNode<T>* node = cur;
+//		cout<<"叔叔的颜色:"<<uncle->color<<endl;
+//		cout<<"叔叔的key:"<<uncle->key<<endl;
                 if(uncle->color==RED){
 			//将父节点和祖父节点变色，往上递归处理
-                        while(node->parent->color==RED){
-				node->parent->color = BLACK;
-				find_uncle_by_parent(node->parent)->color = BLACK;
-				node->parent->parent->color = RED;
-				node = node->parent->parent;	
-                        }	
-			getRoot()->color = BLACK;
-			return ;
+				cur->parent->color = BLACK;
+				find_uncle_by_parent(cur->parent)->color = BLACK;
+				cur->parent->parent->color = RED;
+				cur = cur->parent->parent;
+				p = cur->parent;	
+	                       	continue;
                 }
                 if(uncle->key==-1||uncle->color==BLACK){
+			cout<<"a"<<endl;
 			if(cur->parent->parent->left==cur->parent){
 				//当前节点的父节点是祖父节点的左孩子
+//				cout<<"b"<<endl;
 				if(FLAG==1){
 					//新增节点是父节点的右孩子
 					//先将当前节点和父节点交换，变成同左情况处理
-					RBTNode<T>* temp = p;
-					temp->left = temp;
-					temp->key = cur->key;
+					cur->parent = p->parent;
+					p->parent->left = cur;
+					cur->left = p;
+					p->parent = cur;
 					p->right = Nil;
+					cur = p;
 					FLAG = 0;
 				}
 				if(FLAG==0){
@@ -185,37 +283,94 @@ void RBTree<T>::insert_fix(RBTNode<T>* cur){
 					cur->parent->color = BLACK;
 					cur->parent->parent->color = RED;
 					right_rotate(cur->parent);
+					break;
 				}
 			}else{
 				//当前节点的父节点是祖父节点的右孩子
-                                if(FLAG==0){
+  //                              cout<<"c"<<endl;
+				if(FLAG==0){
                                         //新增节点是父节点的左孩子
                                         //先将当前节点和父节点交换，变成同友情况处理
-                                        RBTNode<T>* temp = p;
-                                        temp->right = temp;
-                                        temp->key = cur->key;
+                                        p->parent->right = cur;
+					cur->parent = p->parent;
+					cur->right = p;
+					p->parent = cur;
                                         p->left = Nil;
+					cur = p;
                                         FLAG = 1;
                                 }
-                                if(FLAG==1){
+				if(FLAG==1){
                                         //新增节点是父节点的右孩子
                                         //同右，直接左转变色即可
-                                        cur->parent->color = BLACK;
+					cur->parent->color = BLACK;
                                         cur->parent->parent->color = RED;
+					//print_tree(getRoot());
                                         left_rotate(cur->parent);
+				//	cout<<"zuoxuan"<<endl;
+					break;
+					//旋转完成后，cur->parent变为旋转后的子树的跟节点，为黑色，所以cur->parent->parent不管是红的黑的都可以，所以不用在往上面递归了
                                 }
 
 			}
                 }
-		getRoot()->color = BLACK;
         }
+	getRoot()->color = BLACK;
+};
+//黑红树的删除对应到2,3,4树中，真实删除的节点在2,3,4树中一定是叶子节点，所以有三种情况：2节点，3节点，4节点
+//2节点：里面有一个节点，一定是黑色
+//3节点：里面有两个节点，下面红，上面黑，如果删除黑，删除后用红代替再变黑，如果删除红，直接删
+//4节点：里面有三个节点，下面两个红，上面黑，如果删除红，直接删，黑色他有两个孩子，不可能删除黑
+//情况1：3节点和4节点
+//情况2：2节点，黑色的，删除的话要找兄弟（这里的兄弟是2,3,4树中的兄弟哦，不是红黑书中的兄弟：）借一个，兄弟有的借，分两种情况，兄弟是3节点或者4节点
+//      2.1：兄弟是3节点：兄弟只有一个孩子（这里的兄弟是2,3,4树中的兄弟，不是红黑树中的兄第，先在红黑树中找到其兄弟），父亲下去替代删除节点，兄弟上来替代父节点（但是要保证顺序，有可能在父亲下去之前旋转来>保证顺序,尊转过程中注意变色)
+//      2.2：兄弟节点是4节点，以当前节点的父节点旋转一次即可
+//情况3：2节点，黑色的，删除的话要找兄弟借一个，但是兄弟没有子节点，没得借
+//      3.1：如果兄弟为黑，父亲为红，将兄弟变红，父亲变黑即可
+//      3.2：如果兄弟为黑，父亲为黑，将兄弟变红，但是可以找到一个不平衡的节点，该节点的一个子树刚才删了一个黑色，让此节点的另一个子树自损一个黑色，这个节点的左右子树就平衡了，但是往上他的父节点又不平衡了>重复上面操作，递归直到跟节点结束
+template<typename T>
+void RBTree<T>::delete_fix(RBTNode<T>* cur){
+	if(cur!=Nil&&cur->color==BLACK){
+		//这种情况对应删除无字节点的情况（情况2,3），如果是黑，破坏了平衡，处理（cur指向的是删除节点）
+		if(cur->parent->left==cur){
+			//当前节点是父节点的左孩子
+		//情况2
+		//先去找真实的兄弟节点
+			RBTNode<T>* bro = NULL;
+			if(){
+				//如果兄弟节点是3节点，
+				//情况2.1
+			}else if(){
+				//如果兄弟节点是4节点
+				//情况2.2
+			}else{
+				//如果兄弟节点是2节点，没有字节点
+				//情况3
+				if(){
+					//情况3.1,父亲为红
+				}else{
+					//情况3,2,父亲为黑
+				}
+			}
+		}else{
+			//当前节点是父节点的右孩子
+		//情况2
+		//情况3
+		}
+
+	}
+	//这种情况对应删除有一个字节点的（情况1），替代节点为红，删除节点为黑，替代过后，将替代节点变黑，保持黑色平衡（cur指向的是替代节点）
+	cur->color = BLACK;
 };
 template<typename T>
-void RBTree<T>::delete_fix(){
-};
-template<typename T>
-RBTNode<T>* RBTree<T>::find_replace_node(RBTNode<T>* node){
-        return NULL;
+RBTNode<T>* RBTree<T>::find_replace_node(RBTNode<T>* cur){
+	RBTNode<T>* node = cur->left;
+	if(node==Nil){
+		cout<<"无前驱节点"<<endl;
+	}
+	while(node->right!=Nil){
+		node = node->right;
+	}
+        return node;
 };
 template<typename T>
 void print_tree(RBTNode<T>* node){
@@ -229,3 +384,22 @@ template<typename T>
 RBTNode<T>* RBTree<T>::getRoot(){
 	return this->root;
 };
+template<typename T>
+inline int update_flag(RBTNode<T>* node){
+	if(node->key==-1){
+		cout<<"当前节点为Nil，更新flag失败"<<endl;
+		return -2;
+	}
+	if(node->parent->key==-1){
+		cout<<"当前节点为跟节点，更新Nil失败"<<endl;
+		return -1;
+	}
+	if(node->parent->left == node){
+		FLAG = 0;
+	}else if(node->parent->right == node){
+		FLAG = 1;
+	}else{
+		cout<<"树有问题"<<endl;
+	}
+	return 0;
+}

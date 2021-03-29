@@ -1,12 +1,15 @@
 #include<iostream>
 #include "RBTree.h"
-
+using namespace std;
 int main(){
 	RBTree<int>* rbt = new RBTree<int>();
-	int arr[] = {1,7,3,9,5,8,2,15,12,11,10};
+	int arr[] = {20,12,7,9,10,8,5,6,4,13,11};
 	int length = sizeof(arr)/sizeof(int);
-	for(int i=0;i<length;i++)
+	for(int i=0;i<length;i++){
 		rbt->insert_node(arr[i]);
-	print_tree(rbt->getRoot());
+		cout<<"__________________________"<<endl;
+		cout<<"插入"<<arr[i]<<"后："<<endl;
+		print_tree(rbt->getRoot());
+	}
 	return 0;
 }
