@@ -7,9 +7,20 @@ int main(){
 	int length = sizeof(arr)/sizeof(int);
 	for(int i=0;i<length;i++){
 		rbt->insert_node(arr[i]);
-		cout<<"__________________________"<<endl;
-		cout<<"插入"<<arr[i]<<"后："<<endl;
-		print_tree(rbt->getRoot());
+//		cout<<"__________________________"<<endl;
+//		cout<<"插入"<<arr[i]<<"后："<<endl;
+//		print_tree(rbt->getRoot());
 	}
+	print_tree(rbt->getRoot());
+	rbt->delete_node(8);
+	print_tree(rbt->getRoot());
+//	rbt->delete_node(4);
+//	print_tree(rbt->getRoot());
+//	rbt->delete_node(6);
+//	print_tree(rbt->getRoot());
+	//rbt->delete_node(20);
+	//print_tree(rbt->getRoot());
+	//rbt->delete_node(6);
+	//print_tree(rbt->getRoot());
 	return 0;
 }
