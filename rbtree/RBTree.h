@@ -34,8 +34,6 @@ class RBTree{
 		int insert_node(T x);
 		//删除
 		int delete_node(T x);
-		//销毁树
-		int destory_tree(RBTNode<T>* root);
 		//通过key寻找节点		
 		RBTNode<T>* find_node_by_key(T x);
 		//打印
@@ -78,6 +76,24 @@ RBTNode<T>* RBTree<T>::find_insert_place(T x){
 		cout<<"插入时，寻找位置出现错"<<endl;
 	}
 	return pre_node;
+};
+template<typename T>
+int destory_tree(RBTNode<T>* node){
+	if(node->left!=Nil)
+		if(!destory_tree(node->left)){
+			cout<<"左边删除出错"<<endl;
+			exit(0);
+		}
+				
+	if(node->right!=Nil)
+		if(!destory_tree(node->right)){
+			cout<<"右边删除出错"<<endl;
+			exit(0);
+		}
+	if(node==node->parent->left?node->parent->left=Nil:node->parent->right=Nil)
+		return 0;
+	free(node);
+	return 1;
 };
 template<typename T>
 RBTree<T>::RBTree(){
