@@ -23,10 +23,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="socket_client.h">
+    <ClInclude Include="socket_server.h">
       <Filter>源文件</Filter>
     </ClInclude>
-    <ClInclude Include="socket_server.h">
+    <ClInclude Include="test23_dlink.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MyHash.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>

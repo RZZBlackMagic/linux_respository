@@ -155,8 +155,9 @@
     <ClCompile Include="gethostInfobyname.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="socket_client.h" />
+    <ClInclude Include="MyHash.h" />
     <ClInclude Include="socket_server.h" />
+    <ClInclude Include="test23_dlink.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

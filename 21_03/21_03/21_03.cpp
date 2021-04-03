@@ -3,24 +3,107 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS 1
 #include <iostream>
 #include <stdio.h>
+#include <mutex>
 #include <stdlib.h>
+#include<malloc.h>
+#include<set>
  #include <thread>
 #include <WinSock2.h>
-#include "socket_server.h"
-#include "socket_client.h"
-
-#pragma comment(lib, "ws2_32.lib")
 using namespace std;
-int main()
-{
+mutex m;
+
+class MyHash {
+private:
+	static MyHash* hash ;
+	static int* hashArr ;
+	int p;
+	MyHash() {
+		hashArr = (int*)malloc(10 * sizeof(int));
+		memset(hashArr, -1, 10 * sizeof(int));
+		initHash();
+	}
+	~MyHash() {
+		free(hashArr);
+	}
+	int getSizeOfArr() {
+		int size = sizeof(hashArr) / sizeof(int);
+		return size;
+	}
+	void initHash() {
+		int size = getSizeOfArr();
+		int p = size;//小于size的最小素数
+		if (size < 2) {
+			p = 1;
+		}
+		while (p > 2) {
+			int temp = p--;
+			int i = p;
+			while (temp%i != 0) {
+				i--;
+			}
+			if (i == 1) {
+				p = temp;
+				break;
+			}
+		}
+	}
+	int dealConflict(int key) {
+		int index = key % p;
+		while (hashArr[++index] != -1);
+		return index;
+	}
+public:
+	static MyHash* getMyHash() {
+		if (hash == NULL)
+			return new MyHash();
+		else
+			return hash;
+	}
+	int add(int key) {
+		int index = key % p;
+		if (hashArr[index] == -1) {
+			index = dealConflict(key);
+		}
+		hashArr[index] = key;
+		return index;
+	}
+	int deleteElement(int key) {
+		return 0;
+	}
+	int update(int newKey, int key) {
+		return 0;
+	}
+};
+MyHash* MyHash::hash = NULL;
+int* MyHash::hashArr = NULL;
+
+int main() {
+	//Link* link = create_link();
+	//count_link(link);
+	//pre_print_link(link);
+	//cout << "houxiang:" << endl;
+	//post_print_link(link);
+	
+	set<int> s;
+	MyHash* hash = MyHash::getMyHash();
+	int index = hash->add(24);
+	cout << index << endl;
+	return 0;
+
+}
+
+//int main()
+//{
 	//server_listen();
 	//client_apply();
-	thread thread_server(server_listen);
-	thread thread_client(client_apply);
-	//thread_server.join();
+	//thread thread_server(server_listen);
+	//thread thread_client(client_apply);
+	//thread_server.join();//需要t.join()，join有两个意思，一是等待子线程完毕，主线程继续向下运行；二是
+	//主线程可以回收子线程，如果子线程没有被回收，则会abort，除非用detach，表示主线程不用管子线程了
 	//thread_client.join();
-	return 0;
-}
+	//cout << "回到主线程" << endl;
+	//return 0;
+//}
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
 // 调试程序: F5 或调试 >“开始调试”菜单
