@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <sys/mman.h>
 #include <mutex>
 #include <unordered_map>
@@ -12,11 +13,14 @@
 
 class pageCache {
 public:
-	static pageCache* pagecache;
+//	static pageCache* pagecache;
 	static pageCache* getPageCacheObj() {
-		if (pagecache == nullptr)
-			return new pageCache();
-		return &_inst;
+		if (page == nullptr)
+			page =  new pageCache();
+		return page;
+	};
+	static void init(){
+		getPageCacheObj();
 	};
 	/*
 	1. 当central cache向page cache申请内存时，page cache先检查对应位置有没有span，如果没有则向更
@@ -32,7 +36,11 @@ public:
 	void FreeMemFromCentralCache(Span* span);
 	void ReturnSpanToPage(Span* span);
 private:
-	pageCache() = default;//默认构造函数
+	pageCache() {
+		//for(size_t i=0;i<NPAGES;i++){
+		//	_pagelist[i] = *(new Spanlist());
+		//}			
+	};//默认构造函数
 	pageCache(const pageCache&) = delete;//禁止拷贝构造
 	pageCache& operator=(const pageCache&) = delete;//禁止参数赋值
 	/*向系统申请k页的内存
@@ -40,9 +48,10 @@ private:
 	void* AllocMemFromSystem();
 
 	Span* _newSpan(size_t npage);
-	
-	static pageCache _inst;
+	static pageCache* page;	
+	//static pageCache _inst;
 	Spanlist _pagelist[NPAGES];//链表数组：数组的每个元素代表了size不同的内存块，size相同的内存块放在一个链表中。
 	std::mutex _mtx;
 	std::unordered_map<PageID, Span*> _id_span_map;
 };
+

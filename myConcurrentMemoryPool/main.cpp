@@ -1,5 +1,7 @@
-#include<iostream>
-#include "common.h"
+
+//#include "threadCache.h"
+#include "pageCache.h"
+/**
 void printList(Spanlist* list){
 	Span* span = list->begin();
 	while(span->_page_id!=0){
@@ -18,10 +20,78 @@ void freeListTest(){
 	list->pop_back();
 	printList(list);
 }
+*/
+class A{
+	public:
+	A(){};
+	void p(){
+		std::cout<<"hhhh"<<std::endl;
+	}
+};
+void spanlistTest(){
+	Spanlist list[10];
+	if(list[11].is_empty()){
+		std::cout<<"aaaa"<<std::endl;
+	}else{
+		std::cout<<"bbbb"<<std::endl;
+	}
+}
+void pageTest(){
+	pageCache* pageObj = pageCache::getPageCacheObj();
+	Span* span = pageObj->AllocMemForCentralCache(NPAGES-1);
+	if(span==nullptr){
+		std::cout<<"page的AllocMemForCentrakCache出错"<<std::endl;
+	}
+}
+void centralTest(){
+//	centralCache* centralObj = centralCache::getInstance();
+//	size_t res = provideRangeObjToThreadCache(void*& start,void*& end,size_t n,size_t bytes);
+}
+void NEXT_OBJ_test(){
+	/*
+	int b = 10;
+	int a = b;
+	std::cout<<&b<<std::endl;
+	int *ptr = &a;
+	std::cout<<ptr<<std::endl;
+	std::cout<<*((int**)ptr)<<std::endl;
+	*/
+	void* ptr = mmap(NULL,(NPAGES-1)*4*1024, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS , -1, 0);
+	std::cout<<ptr<<std::endl;
+	Freelist list;
+	void* temp1 = (void*)ptr;
+	std::cout<<"a:"<<temp1<<std::endl;
+	void * temp = *((void**)ptr);
+//	int* a = (int*)temp;
+//	*a = 10;
+	std::cout<<"b:"<<((void**)ptr)<<std::endl;
+//	list.push(ptr);
+}
+void classSizeTest(){
+//	classSize cs;
+	size_t res = classSize::index(164);
+	std::cout<<res<<std::endl;
 
+}
 int main(){
 	//freeListTest();
-	int i =1;
-	std::cout<<(i>>12)<<std::endl;
+//	threadCache* thread = new threadCache();
+//	thread->Allocate(10);
+	//int i =1;
+	//std::cout<<(i>>12)<<std::endl;
+//	A a[7] ;
+//	a[6].p();
+	//spanlistTest();
+//	pageTest();
+	//void* ptr = mmap(NULL,(NPAGES-1)*4*1024, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS , -1, 0);
+	//std::cout<<(void*)ptr<<std::endl;
+        //perror("reason:");
+//      char * mesg = strerror(errno);
+        //std::cout<<errno<<std::endl;
+	//if(ptr==MAP_FAILED){
+	//	std::cout<<"出错了"<<std::endl;	
+	//}
+//	NEXT_OBJ_test();
+	classSizeTest();
 	return 0;
 }
