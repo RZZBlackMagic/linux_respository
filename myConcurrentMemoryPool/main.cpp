@@ -1,6 +1,6 @@
-
-//#include "threadCache.h"
-#include "pageCache.h"
+//#include "centralCache.h"
+#include "threadCache.h"
+//#include "pageCache.h"
 /**
 void printList(Spanlist* list){
 	Span* span = list->begin();
@@ -70,8 +70,27 @@ void NEXT_OBJ_test(){
 void classSizeTest(){
 //	classSize cs;
 	size_t res = classSize::index(164);
+	//std::cout<<res<<std::endl;
+	size_t r = res>>1;
 	std::cout<<res<<std::endl;
+	std::cout<<r<<std::endl;
 
+}
+void centralCacheTest(){
+	void* start;
+	void* end;
+	size_t num = 10;
+	size_t size = 16;
+	size_t get_size = centralCache::getInstance()->provideRangeObjToThreadCache(start,end,num,size);	
+	std::cout<<get_size<<std::endl;
+	std::cout<<start<<std::endl;
+	std::cout<<end<<std::endl;
+}
+void threadcacheTest(){
+	threadCache tc ;
+	void* start = tc.Allocate(164);	
+	std::cout<<"test adress:"<<start<<std::endl;
+	tc.Allocate(165);
 }
 int main(){
 	//freeListTest();
@@ -92,6 +111,8 @@ int main(){
 	//	std::cout<<"出错了"<<std::endl;	
 	//}
 //	NEXT_OBJ_test();
-	classSizeTest();
+//	classSizeTest();
+//	centralCacheTest();
+	threadcacheTest();
 	return 0;
 }

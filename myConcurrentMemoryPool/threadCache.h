@@ -6,7 +6,7 @@ public:
 	// 面向线程的接口
 	void* Allocate(size_t size);
 	void Deallocate(void* start);
-
+	void printThreadCache();
 
 private:
 	//从central获取:getFormCentralCache(

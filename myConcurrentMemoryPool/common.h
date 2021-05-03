@@ -7,6 +7,7 @@ const int NPAGES = 129;
 //（centralCache中）240是spanlist数组的大小
 const int NLISTS = 240;
 //const int PAGELIST_SIZE = 16;
+const int MAXBYTES = 64*4*1024;
 typedef  size_t PageID;
 struct Span {
 	PageID _page_id = 0;//一个span中有好多页，记录指向该span的指针所在的页的页号
@@ -134,6 +135,9 @@ public:
 		_size--;
 		return obj;
 	}
+	void* get_ptr(){
+		return _ptr;	
+	}
 private:
 	void* _ptr=nullptr ;
 	size_t _size;//建立链表中对象的个数
@@ -170,6 +174,7 @@ public:
 		//return ((size + (1<<align) - 1) >> align) - 1;
 		return _round_up(size,align)/align-1;
 	}
+	//下标计算依据看windows文档内图片
 	static inline size_t index(size_t size){
 		//每个区间有多少链
 		size_t group_array[4]={16,56,56,112};
@@ -182,7 +187,28 @@ public:
 		}else if(size<64*1024){
 			return _index(size-8*1024,512)+group_array[0]+group_array[1]+group_array[2];
 		}
-		std::cout<<"计算freelist下标出错"<<std::endl;
+		std::cout<<"计算数组下标出错"<<std::endl;
 		return -1;
+	}
+	//计算应该给出多少个内存块，内存块数控制在[2, 512]之间
+	static size_t NumMoveSize(size_t byte)
+	{
+		if (byte == 0)
+		{
+			return 0;
+		}
+		int num = (int)(MAXBYTES / byte);
+		if (num < 2)
+			num = 2;
+
+		if (num > 512)
+			num = 512;
+		return num;
+	}
+	//根据size计算需要多少页
+	static size_t numToPage(size_t _size){
+		assert(_size>0);
+		size_t num = NumMoveSize(_size);
+		return (size_t)(num*_size) >> 12 ? (size_t)(num*_size) >> 12 : 1;
 	}
 };
