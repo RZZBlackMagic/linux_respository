@@ -53,14 +53,14 @@ size_t centralCache::provideRangeObjToThreadCache(void*& start,void*& end,size_t
         }
 	new_span->_obj_size = bytes;
 */
-	std::cout<<"central未向thread分割前："<<std::endl;
-	printCentralCache();
+//	std::cout<<"central未向thread分割前："<<std::endl;
+//	printCentralCache();
 	//在span中分割出num个byte大小的块后
 	void* obj = new_span->_objlist;
 	start = obj;
 	size_t p_num = 0;	
 	void* prev = nullptr;
-	while(obj!=nullptr&&p_num<=n){
+	while(obj!=nullptr&&p_num<n){
 		prev = obj;
 		obj = NEXT_OBJ(obj);
 		p_num++;
@@ -76,8 +76,8 @@ size_t centralCache::provideRangeObjToThreadCache(void*& start,void*& end,size_t
 	size_t new_index = classSize::index(bytes);//计算剩余的内存快在数组的下标
 	_spanlist[new_index].push_front(new_span);
 	*/
-	std::cout<<"central向thread分割后："<<std::endl;
-	printCentralCache();
+//	std::cout<<"central向thread分割后："<<std::endl;
+//	printCentralCache();
 	mtx.unlock();
 	return p_num;
 };
@@ -92,6 +92,7 @@ Span* centralCache::getOneSpan(Spanlist* list,size_t _size){
 		std::cout<<npage<<std::endl;
 		Span* span = pageCache::getPageCacheObj()->AllocMemForCentralCache(npage);
 		//设置span的objlist:就是通过NEXT_OBJ建立映射，构造成链表形状
+		//要申请很多个内存快的size总和转换为npage，也就是一个span的大小。将这一个span逻辑上划为自由链表。
 		char* start = (char*)(span->_page_id*4*1024);//依据是pageCache里面的申请pageId初始化。
 		char* end = start+span->_npage*4*1024;
 		char* cur = start;
@@ -102,10 +103,12 @@ Span* centralCache::getOneSpan(Spanlist* list,size_t _size){
 			next += _size;
 //			count++;
 		}
+		NEXT_OBJ(cur) = nullptr;
 		span->_objlist = start;
 		span->_use_count = 0;
+		std::cout<<"getOneSpan"<<_size<<std::endl;
 		span->_obj_size = _size;
-		//将新的span挂在spanlist上
+		//将新的span挂在spanlist上，这里的list存储是自由链表计算下标的，并不是span大小。
 		list->push_front(span);	
 		return span;
 	}
@@ -122,6 +125,37 @@ Span* centralCache::getOneSpan(Spanlist* list,size_t _size){
 
 //释放一定数量的对象到page
 //以span为单位返回给pageCache
-void centralCache::releaseListToSpan(void* start,size_t byte_size){
-
+void centralCache::returnObjToCentral(void* start){
+//	std::cout<<">?<"<<std::endl;
+//	printCentralCache();
+//	pageCache::getPageCacheObj()->printMap();
+	//有可能是申请了两次，这两次申请的链是连在一起的只有一个nullptr，第一次在后面，第二次在前面（因为是头插）
+	//如果 释放第二次，没问题，直接走到nullptr结束。如果释放第一次的，就将两次一起释放了，处理两个span
+	while(start){
+		void* next = NEXT_OBJ(start);
+		Span* span = pageCache::getPageCacheObj()->MapToObj(start);
+		//根据映射找到对应的span，这个span是正在用的span，在central中，不在page中。将其链接上去（这就是还给central了）
+		NEXT_OBJ(start) = span->_objlist;
+		span->_objlist = start;//还回来的本质就是将span的objlist链接回来，分配的本质就是将span的objlist向后移动。span还是在spanlist上面挂的。返回去的只是一个span的objlist上面的部分void*块。
+		span->_use_count--;
+		//该span没有使用者了。
+		if(span->_use_count==0){
+			//说明span没有人在使用，返回到page
+			//在central将其删掉
+			size_t _index = classSize::index(span->_obj_size);
+			_spanlist[_index].earse(span);
+			span->_obj_size = 0;
+			span->_use_count = 0;
+			span->_objlist = nullptr;
+			span->_next = nullptr;
+			span->_prev = nullptr;
+			pageCache::getPageCacheObj()->TakeSpanToPage(span);	
+		}
+		start = next;
+	}
+//	printCentralCache();
+//	pageCache::getPageCacheObj()->printMap();
+	//考虑一下：如果上面循环走完，use_count还不为0咋办？
+	//提示：根据分配原则，每次申请的内存块(n个)内存大小向上调整后就是分配的内存大小。分配的n个内存块逻辑上构造成自由链表
+	//末尾为nullptr，本次释放也就是要释放这n个内存块。
 };

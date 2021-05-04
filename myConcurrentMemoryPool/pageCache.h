@@ -34,8 +34,11 @@ public:
 	如果central cache释放回一个span，则依次寻找span的前后page id的span，看是否可以合并，如果合
 	并继续向前寻找。这样就可以将切小的内存合并收缩成大的span，减少内存碎片。*/
 	void FreeMemFromCentralCache(Span* span);
-	void ReturnSpanToPage(Span* span);
+	//void ReturnSpanToPage(Span* span);
+	void TakeSpanToPage(Span* span);
 	void printPageList();
+	Span* MapToObj(void* ptr);
+	void printMap();
 private:
 	pageCache() {
 		//for(size_t i=0;i<NPAGES;i++){

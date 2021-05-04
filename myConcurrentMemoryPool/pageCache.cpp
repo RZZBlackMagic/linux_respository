@@ -63,8 +63,8 @@ Span* pageCache::_newSpan(size_t npage){
 		//找到了span
 		Span* span =  _pagelist[npage].begin();
 		_pagelist[npage].pop_front();
-		std::cout<<"对应的下标刚好有，向centralCache分割后："<<std::endl;
-		printPageList();
+//		std::cout<<"对应的下标刚好有，向centralCache分割后："<<std::endl;
+//		printPageList();
 		return span;
 	}
 	//如果该下标有span，直接获取
@@ -82,11 +82,12 @@ Span* pageCache::_newSpan(size_t npage){
 			origin_span->_npage = origin_span->_npage - npage;//计算剩余内存快的页数，
 			_pagelist[origin_span->_npage].push_front(origin_span);			
 			//更新map，记录split的页
+//			std::cout<<"构造map:"<<split->_npage<<std::endl;
 			for(size_t j=0;j<split->_npage;j++){
 				_id_span_map[split->_page_id+j] = split;
 			}
-			std::cout<<"对应下标没有，向后走，找到后向centralCache分割后："<<std::endl;
-			printPageList();
+//			std::cout<<"对应下标没有，向后走，找到后向centralCache分割后："<<std::endl;
+//			printPageList();
 			return split;
 		}
 	}
@@ -96,10 +97,71 @@ Span* pageCache::_newSpan(size_t npage){
 	Span* maxSpan = new Span;
 	maxSpan->_objlist = ptr;
 	maxSpan->_page_id = (PageID)ptr>>12;//4<<12=4k   4k>>12=4
+//	std::cout<<"max_page_id:"<<maxSpan->_page_id<<std::endl;
 	maxSpan->_npage = NPAGES-1;
 	_pagelist[NPAGES-1].push_back(maxSpan);
 	//申请完了后，继续_newSpan分配
-	std::cout<<"向系统申请后："<<std::endl;
-	printPageList();
+//	std::cout<<"向系统申请后："<<std::endl;
+//	printPageList();
 	return _newSpan(npage);
+};
+
+Span* pageCache::MapToObj(void* ptr){
+//	std::cout<<"MAP:"<<std::endl;
+//	printMap();
+	PageID page_id = (PageID)ptr>>12;	
+	auto it = _id_span_map.find(page_id);
+//	std::cout<<"MapToObj的pageid："<<page_id<<std::endl;
+	if(it==_id_span_map.end()){
+		assert(false);
+	}
+//	std::cout<<"??????????????"<<it->second<<std::endl;
+	
+	return it->second;
+}
+//回收分配出去的span块，在map里面寻找没有使用的span，将其合并，回收到pagecache
+void pageCache::TakeSpanToPage(Span* span){
+	//向前合并
+	auto prev_it = _id_span_map.find(span->_page_id-1);
+	while(prev_it!=_id_span_map.end()){
+		Span* prev_span = prev_it->second;
+		if(prev_span->_use_count!=0){
+			break;
+		}
+		size_t new_page = prev_span->_npage+span->_npage;
+		if(new_page>128){
+			break;
+		}
+		//在map中将prev删除
+		_id_span_map.erase(prev_it);
+		//合并span和prev_span
+		prev_span->_npage = new_page;
+		span = prev_span;
+		prev_it = _id_span_map.find(span->_page_id-1);
+
+	}
+	//向后合并	
+	auto next_it = _id_span_map.find(span->_page_id+span->_npage);
+	while(next_it!=_id_span_map.end()){
+		Span* next_span = next_it->second;
+		if(next_span->_use_count!=0)
+			break;
+		size_t new_page = next_span->_npage+span->_npage;
+		if(new_page>128){
+			break;
+		}
+		//在map中删除next
+		_id_span_map.erase(next_it);
+		span->_npage = new_page;
+		next_it = _id_span_map.find(span->_page_id+span->_npage);
+ 	}
+	_pagelist[span->_npage].push_front(span);
+}
+void pageCache::printMap(){
+//	int i =0;
+	for(auto it = _id_span_map.begin();it!=_id_span_map.end();it++){
+//		i++;
+		std::cout<<"page_id:"<<it->first<<",span起始地址:"<<it->second<<std::endl;
+	}
+//	std::cout<<i<<std::endl;
 };

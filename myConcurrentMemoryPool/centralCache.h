@@ -12,7 +12,7 @@ public:
 	//给threadCache分配一定数量的对象
 	size_t provideRangeObjToThreadCache(void*& start,void*& end,size_t n,size_t bytes_size);
 	//释放spanlist的一部分对象
-	void releaseListToSpan(void* start,size_t byte_size);
+	void returnObjToCentral(void* start);
 	void printCentralCache();
 private:
 	centralCache() = default;

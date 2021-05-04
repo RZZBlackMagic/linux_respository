@@ -88,9 +88,24 @@ void centralCacheTest(){
 }
 void threadcacheTest(){
 	threadCache tc ;
-	void* start = tc.Allocate(164);	
-	std::cout<<"test adress:"<<start<<std::endl;
-	tc.Allocate(165);
+	void* address_arr[11];
+	for(int i=0;i<11;i++){
+		address_arr[i] = tc.Allocate(164);
+		std::cout<<"刚分配的地址："<<address_arr[i]<<std::endl;
+	}
+//	address_arr[10] = tc.Allocate(164);	
+//	std::cout<<"test adress:"<<address_arr[10]<<std::endl;
+//	tc.Allocate(1033);
+//	tc.Deallocate(start);
+	std::cout<<"释放前："<<std::endl;
+//	tc.printThreadCache();
+	for(int i=0;i<11;i++){
+		tc.Deallocate(address_arr[i]);
+//		std::cout<<"下标："<<i<<" "<<address_arr[i]<<std::endl;
+	}
+	std::cout<<"释放后："<<std::endl;
+//	tc.printThreadCache();
+//		tc.printThreadCache();
 }
 int main(){
 	//freeListTest();

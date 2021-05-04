@@ -8,6 +8,7 @@ const int NPAGES = 129;
 const int NLISTS = 240;
 //const int PAGELIST_SIZE = 16;
 const int MAXBYTES = 64*4*1024;
+const int THREAD_MAX_SIZE = 10;
 typedef  size_t PageID;
 struct Span {
 	PageID _page_id = 0;//一个span中有好多页，记录指向该span的指针所在的页的页号
@@ -98,7 +99,7 @@ public:
 		return _size;
 	}
 	size_t max_size(){
-		return 10;
+		return THREAD_MAX_SIZE;
 	}
 	void* clear(){
 		void* start = _ptr;
@@ -140,7 +141,7 @@ public:
 	}
 private:
 	void* _ptr=nullptr ;
-	size_t _size;//建立链表中对象的个数
+	size_t _size = 0;//建立链表中对象的个数
 	//size_t _max_size;//最大个数，超过这个个数就进行释放
 };
 
