@@ -23,7 +23,6 @@ void pageCache::printPageList(){
 //申请npage的span，span是page的整数倍
 //npage:多少个page
 Span* pageCache::AllocMemForCentralCache(size_t npage) {
-//	std::cout<<"pageCache::allmemforCentralCahce->_newSpan"<<std::endl;
 	return _newSpan(npage);	
 }
 
@@ -33,38 +32,19 @@ void pageCache::FreeMemFromCentralCache(Span* span) {
 
 void* pageCache::AllocMemFromSystem() {
 	extern int errno;
-//	std::cout<<"pagecache::allocateMemFormSystem:->mmap"<<std::endl;
 	//只有一个pagecache，不需要实现互斥
 	//申请NPAGES大小的页
 	void* ptr = mmap(NULL,(NPAGES-1)*4*1024, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS , -1, 0);
-//	std::cout<<"mmap分配的起始地址："<<(void*)ptr<<std::endl;
-//	perror("reason:");
-//	char * mesg = strerror(errno);
-//	std::cout<<errno<<std::endl;
 	assert(ptr!=MAP_FAILED);//条件不成立。扑捉错误
-//	perror("reason:");
 	return ptr;
 }
 Span* pageCache::_newSpan(size_t npage){
-//	std::cout<<"pageCache::_newSpan->AllocMemFormSystem"<<std::endl;
 	//先去找对应的Spanlist的下标
 	//assert(npage<NPAGES);
-//	if(npage<NPAGES){
-//		std::cout<<"1"<<std::endl;
-//	}else{
-//		std::cout<<"2"<<std::endl;
-//	}	std::cout<<"Obj:"<<&_pagelist[npage]<<std::endl;
-//	if(_pagelist[npage].is_empty()){
-//		std::cout<<"空"<<std::endl;
-//	}else{
-//		std::cout<<"不空"<<std::endl;
-//	}
 	if(!_pagelist[npage].is_empty()&&_pagelist[npage].begin()!=_pagelist[npage].end()){
 		//找到了span
 		Span* span =  _pagelist[npage].begin();
 		_pagelist[npage].pop_front();
-//		std::cout<<"对应的下标刚好有，向centralCache分割后："<<std::endl;
-//		printPageList();
 		return span;
 	}
 	//如果该下标有span，直接获取
@@ -82,12 +62,9 @@ Span* pageCache::_newSpan(size_t npage){
 			origin_span->_npage = origin_span->_npage - npage;//计算剩余内存快的页数，
 			_pagelist[origin_span->_npage].push_front(origin_span);			
 			//更新map，记录split的页
-//			std::cout<<"构造map:"<<split->_npage<<std::endl;
 			for(size_t j=0;j<split->_npage;j++){
 				_id_span_map[split->_page_id+j] = split;
 			}
-//			std::cout<<"对应下标没有，向后走，找到后向centralCache分割后："<<std::endl;
-//			printPageList();
 			return split;
 		}
 	}
@@ -97,26 +74,18 @@ Span* pageCache::_newSpan(size_t npage){
 	Span* maxSpan = new Span;
 	maxSpan->_objlist = ptr;
 	maxSpan->_page_id = (PageID)ptr>>12;//4<<12=4k   4k>>12=4
-//	std::cout<<"max_page_id:"<<maxSpan->_page_id<<std::endl;
 	maxSpan->_npage = NPAGES-1;
 	_pagelist[NPAGES-1].push_back(maxSpan);
 	//申请完了后，继续_newSpan分配
-//	std::cout<<"向系统申请后："<<std::endl;
-//	printPageList();
 	return _newSpan(npage);
 };
 
 Span* pageCache::MapToObj(void* ptr){
-//	std::cout<<"MAP:"<<std::endl;
-//	printMap();
 	PageID page_id = (PageID)ptr>>12;	
 	auto it = _id_span_map.find(page_id);
-//	std::cout<<"MapToObj的pageid："<<page_id<<std::endl;
 	if(it==_id_span_map.end()){
 		assert(false);
 	}
-//	std::cout<<"??????????????"<<it->second<<std::endl;
-	
 	return it->second;
 }
 //回收分配出去的span块，在map里面寻找没有使用的span，将其合并，回收到pagecache
@@ -129,7 +98,7 @@ void pageCache::TakeSpanToPage(Span* span){
 			break;
 		}
 		size_t new_page = prev_span->_npage+span->_npage;
-		if(new_page>128){
+		if(new_page>NPAGES-1){
 			break;
 		}
 		//在map中将prev删除
@@ -147,7 +116,7 @@ void pageCache::TakeSpanToPage(Span* span){
 		if(next_span->_use_count!=0)
 			break;
 		size_t new_page = next_span->_npage+span->_npage;
-		if(new_page>128){
+		if(new_page>NPAGES-1){
 			break;
 		}
 		//在map中删除next
@@ -158,10 +127,7 @@ void pageCache::TakeSpanToPage(Span* span){
 	_pagelist[span->_npage].push_front(span);
 }
 void pageCache::printMap(){
-//	int i =0;
 	for(auto it = _id_span_map.begin();it!=_id_span_map.end();it++){
-//		i++;
 		std::cout<<"page_id:"<<it->first<<",span起始地址:"<<it->second<<std::endl;
 	}
-//	std::cout<<i<<std::endl;
 };

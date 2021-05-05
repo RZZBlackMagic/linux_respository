@@ -30,9 +30,7 @@ void centralCache::printCentralCache(){
 //获取一个span，切分为num个大小为byte的块，返回给threadCache，剩下继续放在centralCache
 size_t centralCache::provideRangeObjToThreadCache(void*& start,void*& end,size_t n,size_t bytes){
 	assert(bytes<MAXBYTES);
-//	std::cout<<"centralcache::provideRangeObjToThreadCache->getOneSpan"<<std::endl;
 	//根据bytes计算出要在spanlist数组中获取的index(先对齐)
-	//用了threadCache同样的对齐方式，说明_spanlist和threadCache.cpp中的_freelist是结构一样的
 	mtx.lock();
 	size_t index = classSize::index(bytes);	
 	//size_t byte;
@@ -53,8 +51,6 @@ size_t centralCache::provideRangeObjToThreadCache(void*& start,void*& end,size_t
         }
 	new_span->_obj_size = bytes;
 */
-//	std::cout<<"central未向thread分割前："<<std::endl;
-//	printCentralCache();
 	//在span中分割出num个byte大小的块后
 	void* obj = new_span->_objlist;
 	start = obj;
@@ -76,15 +72,12 @@ size_t centralCache::provideRangeObjToThreadCache(void*& start,void*& end,size_t
 	size_t new_index = classSize::index(bytes);//计算剩余的内存快在数组的下标
 	_spanlist[new_index].push_front(new_span);
 	*/
-//	std::cout<<"central向thread分割后："<<std::endl;
-//	printCentralCache();
 	mtx.unlock();
 	return p_num;
 };
 
 //获取一个span，返回，不够就去pageCache要
 Span* centralCache::getOneSpan(Spanlist* list,size_t _size){
-//	std::cout<<"centralcache::getOneSpan->AllocmemFormCentralCache"<<std::endl;
 	//在spanlist中找到了，直接返回
 	if(list->is_empty()){		
 	//没有找到，就去pageCache中获取新的span
@@ -126,8 +119,6 @@ Span* centralCache::getOneSpan(Spanlist* list,size_t _size){
 //释放一定数量的对象到page
 //以span为单位返回给pageCache
 void centralCache::returnObjToCentral(void* start){
-//	std::cout<<">?<"<<std::endl;
-//	printCentralCache();
 //	pageCache::getPageCacheObj()->printMap();
 	//有可能是申请了两次，这两次申请的链是连在一起的只有一个nullptr，第一次在后面，第二次在前面（因为是头插）
 	//如果 释放第二次，没问题，直接走到nullptr结束。如果释放第一次的，就将两次一起释放了，处理两个span
@@ -153,8 +144,6 @@ void centralCache::returnObjToCentral(void* start){
 		}
 		start = next;
 	}
-//	printCentralCache();
-//	pageCache::getPageCacheObj()->printMap();
 	//考虑一下：如果上面循环走完，use_count还不为0咋办？
 	//提示：根据分配原则，每次申请的内存块(n个)内存大小向上调整后就是分配的内存大小。分配的n个内存块逻辑上构造成自由链表
 	//末尾为nullptr，本次释放也就是要释放这n个内存块。
