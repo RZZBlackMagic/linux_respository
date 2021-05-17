@@ -40,27 +40,72 @@ void test1() {
 		cout << *it << endl;
 	}
 }
-long accumlate(long start,long middle,long end) {
-	return ((middle - start)*(end - middle));// % 99997867;
+inline long accumlate(long start,long middle,long end) {
+	return (end - middle)> 99997867?(end - middle)% 99997867: (end - middle);// % 99997867;
 }
 long arr[1000000] = { 0 };
 long deal1(long N, long D, long start, long middle, long res) {
 	if (N - start < 3) {
-		return 0;
+		return res;
 	}
 	if ((middle < N - 1) && arr[middle] - arr[start] <= D) {
-		cout << "A" << endl;
-		long end = middle +1;
-		while ((end) < (N-1)&&arr[end] - arr[middle] <= D) {
-			cout << "B" << endl;
+		//cout << "A" << endl;
+		long end = middle;
+	 	while ((end) < (N-1)&&arr[end+1] - arr[start] <= D) {
+			//cout << "B" << endl;
 			end++;
 		}
-		return deal1(N, D, start, middle + 1, res + accumlate(start, middle, end));
+		cout << "start:" << start << "middle:" << middle << "end:" << end<<"   ";
+		cout << accumlate(start, middle, end)<<endl;
+		res = (res + accumlate(start, middle, end)) > 99997867 ? (res + accumlate(start, middle, end)) % 99997867 : (res + accumlate(start, middle, end));
+		return deal1(N, D, start, middle + 1, res);
 	}
 	else {
-		cout << "C" << endl;
+		cout << "start:" << start << "middle:" << middle << endl;
+		//cout << "C" << endl;
 		return deal1(N, D, start + 1, start + 2, res);
 	}
+}
+long deal2(long N,long D) {
+	long start, middle, end, res = 0;
+	for (start = 0; start < N - 2; start++) {
+		for (middle = start+1; middle < N - 1; middle++) {
+			if (arr[middle] - arr[start] > D) {
+				break;
+			}
+			for (end = middle; end < N - 1; end++) {
+				if (arr[end+1] - arr[start] > D) {
+					break;
+				}
+			}
+			res = (res+(end - middle))> 99997867?(res+end-middle)% 99997867:(res+end-middle);
+		}
+	}
+	return res;
+}
+inline long accumlate1(long i) {
+	long res = 0;
+			res = ((i - 1) * (i - 2) / 2 );
+	return res;
+}
+long deal3(long N,long D) {
+	long start = 0, res = 0;
+	long i = 0;
+	bool flag;
+	for (start = 0; start < N - 2; start++) {
+		flag = false;
+		for (i = start; i < N&&arr[i] - arr[start] <= D; i++) {
+			flag = true;
+		}
+	//	cout << i - start +1<< endl;
+		//cout << flag << endl;
+		//if (flag) {
+			if (i - start >= 2) {
+				res = (res + accumlate1(i - start));
+			}
+		//}
+	}
+	return res;
 }
 void test2() {
 	long N, D;
@@ -68,5 +113,7 @@ void test2() {
 	for (long i = 0; i < N;i++) {
 		cin >> arr[i];
 	}
-	cout << deal1(N, D, 0, 1, 0) << endl;
+//	long res = deal1(N,D,0,1,0);
+	long res = deal3(N,D);
+	cout << res << endl;
 }

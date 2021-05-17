@@ -158,6 +158,7 @@
     <ClInclude Include="my_set.h" />
     <ClInclude Include="new_code.h" />
     <ClInclude Include="_08.h" />
+    <ClInclude Include="_10.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

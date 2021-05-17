@@ -3,7 +3,8 @@
 
 #include <iostream>
 #//include "new_code.h"
-#include "_08.h"
+//#include "_08.h"
+#include "_10.h"
 int main()
 {
 	/*
@@ -16,14 +17,23 @@ int main()
 	int n = str.length();
 	//cout << (int)c << endl;
 	//test2();
-	*/
-	cout << accumlate(1, 2, 3) << endl;;
+	
+	//cout << accumlate(1, 2, 3) << endl;;
 	string str = "abcdefg";
 	string str1 = str.substr(0, 2) + str.substr(3, str.length());
 	if (str1 == "abdeg") {
 	//	cout << "a" << endl;
 	}
-	test2();
+	//test2();
+	int arr[7] = { 0,11,2,8,24,15,6 };
+	//quick_sort(arr, 7);
+	for (int i = 0; i < 7; i++) {
+		//cout << arr[i] << " ";
+	}
+	cout << endl;
+	ISBN();
+		*/
+	 test10();
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
