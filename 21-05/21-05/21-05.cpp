@@ -32,8 +32,14 @@ int main()
 	}
 	cout << endl;
 	ISBN();
-		*/
-	 test10();
+	
+	 //test10();
+	int a = 123;
+	long long l= 231443524524526;
+	a = l % 10;
+	string str = "";
+	cout << a << endl;	*/
+	test12();
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单

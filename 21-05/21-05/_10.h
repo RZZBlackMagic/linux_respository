@@ -2,6 +2,7 @@
 #include<deque>
 #include<assert.h>
 #include<algorithm>
+#include<stack>
 #include<map>
 using namespace std;
 void quick_sort(int* arr,int n) {
@@ -761,4 +762,159 @@ void test10() {
 	}
 	ListNode* n = FindFirstCommonNode(head1, head2);
 	cout << n->val << endl;
+}
+
+ListNode* addInList(ListNode* head1, ListNode* head2) {
+	
+	vector<int> vec;
+	vec.push_back(0);
+	stack<int> s1;
+	stack<int> s2;
+	ListNode* new_head1 = head1;
+	ListNode* new_head2 = head2;
+	ListNode* pre_head1 = head1;
+	while (new_head1 != nullptr || new_head2 != nullptr) {
+		cout << "A" << endl;
+		if (new_head1 != nullptr) {
+			s1.push(new_head1->val);
+			cout << new_head1->val << endl;
+			pre_head1 = new_head1;
+			new_head1 = new_head1->next;
+		}
+		if (new_head2 != nullptr) {
+			cout << new_head2->val << endl;
+			s2.push(new_head2->val);
+			new_head2 = new_head2->next;
+		}
+	}
+	pre_head1->next = head2;
+	long long i = 0;
+	//long long min_len = s1.size()<s2.size()?s1.size():s2.size();
+	while(!s1.empty()&&!s2.empty()){
+		vec.push_back(0);
+		int temp = s1.top()+s2.top();
+		s1.pop();
+		s2.pop();
+		vec[i] = vec[i] + temp%10;
+		vec[i+1] = temp/10;
+		if(vec[i]>=10){
+			vec[i] = vec[i]%10;
+			vec[i+1] = 1;
+		}
+		i++;
+	}
+	while(!s1.empty()){
+		vec.push_back(0);
+		vec[i] += s1.top();
+		vec[i+1] = vec[i]/10;
+		if(vec[i]>=10){
+			vec[i] = vec[i] % 10;
+			vec[i+1] = 1;
+		}
+		s1.pop();
+		i++;
+	}
+	while(!s2.empty()){
+		vec.push_back(0);
+		vec[i] += s2.top();
+		vec[i+1] = vec[i]/10;
+		if(vec[i]>=10){
+			vec[i] = vec[i] % 10;
+			vec[i+1] = 1;
+		}
+		s2.pop();
+		i++;
+	}
+
+	ListNode* res = head1;
+	//head1->val = vec.size();
+	//return head1;
+	for(auto it = vec.end()-1;it!=vec.begin();it--){
+		head1->val = *it;
+		head1 = head1->next;
+	}
+	head1->val = vec[0];
+	head1->next = nullptr;
+	return res;
+}
+void test11() {
+	ListNode * head1 = create();
+	ListNode* head2 = create();
+	ListNode* res = addInList(head1->next, head2->next);
+	print_link(res);
+}
+vector<int> res;
+void print_hang_vec(vector<int>& vec, int beg, int end, int flag) {
+	if (flag == 0) {
+		while (beg <= end) {
+			cout << "D" << endl;
+			if (vec[beg] == INT_MIN)
+				return;
+			res.push_back(vec[beg]);
+			vec[beg] = INT_MIN;
+			beg++;
+		}
+	}
+	else {
+		while (beg <= end) {
+			cout << "E" << endl;
+			if (vec[end] == INT_MIN)
+				return;
+			res.push_back(vec[end]);
+			end--;
+		}
+	}
+
+}
+void print_lie_vec(vector<vector<int>>& vec, int beg, int end, int n_index, int flag) {
+	if (flag == 0) {
+		for (int i = beg; i <= end; i++) {
+			cout << "B" << endl;
+			if (vec[beg][n_index] == INT_MIN)
+				return;
+			res.push_back(vec[beg][n_index]);
+		}
+	}
+	else {
+		for (int i = end; i >= beg; i++) {
+			cout << "C" << endl;
+			if (vec[end][n_index] == INT_MIN)
+				return;
+			res.push_back(vec[end][n_index]);
+		}
+	}
+
+}
+vector<int> spiralOrder(vector<vector<int> > &matrix) {
+	int m = matrix.size();
+	int n = matrix[0].size();
+	int n_beg = 0;
+	int n_end = n - 1;
+	int m_beg = 0;
+	int m_end = m - 1;
+	while (m_beg <= m_end && n_beg <= n_end) {
+		cout << "A" << endl;
+		print_hang_vec(matrix[m_beg], n_beg, n_end, 0);
+		print_lie_vec(matrix, m_beg, m_end, n_end, 0);
+		print_hang_vec(matrix[m_end], n_beg, n_end, 1);
+		print_lie_vec(matrix, m_beg, m_end, n_beg, 1);
+		m_beg++;
+		n_beg++;
+		m_end--;
+		n_end--;
+	}
+	return res;
+}
+void test12() {
+	vector<vector<int>> vec;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 5; j++) {
+			vec[i][j] = i + j;
+		}
+	}
+	spiralOrder(vec);
+	for (int i = 0; i < res.size() - 1; i++) {
+		cout << res[i] << " ";
+	}
+	cout << endl;
 }

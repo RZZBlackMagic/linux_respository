@@ -1,9 +1,25 @@
 ﻿  21-05.cpp
-d:\c++poj\21-05\21-05\_10.h(352): warning C4018: “<”: 有符号/无符号不匹配
-d:\c++poj\21-05\21-05\_10.h(358): warning C4018: “>=”: 有符号/无符号不匹配
-d:\c++poj\21-05\21-05\_10.h(364): warning C4018: “<”: 有符号/无符号不匹配
-d:\c++poj\21-05\21-05\_10.h(375): warning C4018: “<”: 有符号/无符号不匹配
-d:\c++poj\21-05\21-05\_10.h(502): warning C4018: “<”: 有符号/无符号不匹配
-d:\c++poj\21-05\21-05\_10.h(510): warning C4018: “<”: 有符号/无符号不匹配
-d:\c++poj\21-05\21-05\_10.h(545): warning C4018: “<”: 有符号/无符号不匹配
+d:\c++poj\21-05\21-05\_10.h(353): warning C4018: “<”: 有符号/无符号不匹配
+d:\c++poj\21-05\21-05\_10.h(359): warning C4018: “>=”: 有符号/无符号不匹配
+d:\c++poj\21-05\21-05\_10.h(365): warning C4018: “<”: 有符号/无符号不匹配
+d:\c++poj\21-05\21-05\_10.h(376): warning C4018: “<”: 有符号/无符号不匹配
+d:\c++poj\21-05\21-05\_10.h(503): warning C4018: “<”: 有符号/无符号不匹配
+d:\c++poj\21-05\21-05\_10.h(511): warning C4018: “<”: 有符号/无符号不匹配
+d:\c++poj\21-05\21-05\_10.h(546): warning C4018: “<”: 有符号/无符号不匹配
+d:\c++poj\21-05\21-05\_10.h(798): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(799): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(800): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(801): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(802): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(808): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(809): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(810): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(811): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(812): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(819): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(820): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(821): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(822): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(823): warning C4244: “参数”: 从“__int64”转换到“const unsigned int”，可能丢失数据
+d:\c++poj\21-05\21-05\_10.h(916): warning C4018: “<”: 有符号/无符号不匹配
   21-05.vcxproj -> D:\c++Poj\21-05\Debug\21-05.exe
